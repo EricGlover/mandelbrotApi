@@ -1,7 +1,5 @@
 package main
 
-//TODO: add some routing code because why not
-
 import (
 	"encoding/json"
 	"fmt"
@@ -220,7 +218,8 @@ func main() {
   		log.Fatal("$PORT must be set")
   	}
     fmt.Println("Running production")
-		log.Fatal(http.ListenAndServe(port, nil))
+    portStr := ":" + port
+		log.Fatal(http.ListenAndServe(portStr, nil))
 	}
 
 }
