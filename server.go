@@ -1,9 +1,9 @@
 package main
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"fmt"
-	"github.com/EricGlover/mandelbrot"
+	// "github.com/EricGlover/mandelbrot"
 	"io"
 	"log"
 	"net/http"
@@ -50,50 +50,50 @@ func readBody(r *http.Request) ([]byte, error) {
 }
 
 func point(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("request: ", r)
-
-	//read our r.Body and parse the json into points
-	var points interface{}
-	b, _ := readBody(r)
-	fmt.Println("body: ", string(b))
-	err := json.Unmarshal(b, &points)
-	if err != nil {
-		fmt.Println("error in json")
-	}
-	//convert points into []complex
-	nums := make([]complex128, len(points.([]interface{})))
-	//...turned rather complex when interface{}'s came into the picture
-	for i, point := range points.([]interface{}) {
-		p := point.(map[string]interface{})
-		var real, imaginary float64
-		//refactor this later
-		switch p["real"].(type) {
-		case float64:
-			real = p["real"].(float64)
-		case string:
-			real, _ = strconv.ParseFloat(p["real"].(string), 64)
-		default:
-			fmt.Println("json parsing is all fucked")
-		}
-		switch p["imaginary"].(type) {
-		case float64:
-			imaginary = p["imaginary"].(float64)
-		case string:
-			imaginary, _ = strconv.ParseFloat(p["imaginary"].(string), 64)
-		default:
-			fmt.Println("json parsing is all fucked")
-		}
-		nums[i] = complex(real, imaginary)
-	}
-	fmt.Println("numbers: ", nums)
-	//check these numbers against our mandelbrot setup
-	answer := make([]bool, len(nums))
-	for i := 0; i < len(nums); i++ {
-		answer[i] = mandelbrot.IsMandelbrot(nums[i])
-	}
-	fmt.Println("answer: ", answer)
-	b, err = json.Marshal(answer)
-	w.Write(b)
+	// fmt.Println("request: ", r)
+	//
+	// //read our r.Body and parse the json into points
+	// var points interface{}
+	// b, _ := readBody(r)
+	// fmt.Println("body: ", string(b))
+	// err := json.Unmarshal(b, &points)
+	// if err != nil {
+	// 	fmt.Println("error in json")
+	// }
+	// //convert points into []complex
+	// nums := make([]complex128, len(points.([]interface{})))
+	// //...turned rather complex when interface{}'s came into the picture
+	// for i, point := range points.([]interface{}) {
+	// 	p := point.(map[string]interface{})
+	// 	var real, imaginary float64
+	// 	//refactor this later
+	// 	switch p["real"].(type) {
+	// 	case float64:
+	// 		real = p["real"].(float64)
+	// 	case string:
+	// 		real, _ = strconv.ParseFloat(p["real"].(string), 64)
+	// 	default:
+	// 		fmt.Println("json parsing is all fucked")
+	// 	}
+	// 	switch p["imaginary"].(type) {
+	// 	case float64:
+	// 		imaginary = p["imaginary"].(float64)
+	// 	case string:
+	// 		imaginary, _ = strconv.ParseFloat(p["imaginary"].(string), 64)
+	// 	default:
+	// 		fmt.Println("json parsing is all fucked")
+	// 	}
+	// 	nums[i] = complex(real, imaginary)
+	// }
+	// fmt.Println("numbers: ", nums)
+	// //check these numbers against our mandelbrot setup
+	// answer := make([]bool, len(nums))
+	// for i := 0; i < len(nums); i++ {
+	// 	answer[i] = mandelbrot.IsMandelbrot(nums[i])
+	// }
+	// fmt.Println("answer: ", answer)
+	// b, err = json.Marshal(answer)
+	// w.Write(b)
 }
 
 func api(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +106,7 @@ func api(w http.ResponseWriter, r *http.Request) {
 	//parse some json here and we're good to go
 }
 func root(w http.ResponseWriter, r *http.Request) {
-  fmt.Println("running root")
+	fmt.Println("running root")
 	fmt.Fprintf(w, "Hello everyone and welcome to my snazzy mandelbrot set api")
 }
 
@@ -178,10 +178,10 @@ func img(w http.ResponseWriter, r *http.Request) {
 	p.set(r.Form)
 	fmt.Println("p = ", p)
 	//ship it to mandelbrot
-	answer := mandelbrot.Img(p.canvasWidth, p.canvasHeight, p.planeCoordinates, p.maxIterations)
+	// answer := mandelbrot.Img(p.canvasWidth, p.canvasHeight, p.planeCoordinates, p.maxIterations)
 	//write our answer as a json response
-	j, _ := json.Marshal(answer)
-	w.Write(j)
+	// j, _ := json.Marshal(answer)
+	// w.Write(j)
 }
 
 const (
@@ -189,15 +189,12 @@ const (
 	apiVersion = 1
 )
 
-
-
 func main() {
 	fmt.Println("hello server")
 	// fmt.Println(mandelbrot.IsMandelbrot(1.00))
 
-
-  //routing
-  //root
+	//routing
+	//root
 	http.HandleFunc("/", root)
 	//points router
 	http.HandleFunc("/api/points", point)
@@ -206,19 +203,18 @@ func main() {
 	//query testing
 	http.HandleFunc("/api/img", img)
 
-
-  //server
-  //if error log and exit
+	//server
+	//if error log and exit
 	if !production {
-    portStr := fmt.Sprintf(":%d", 8080)
+		portStr := fmt.Sprintf(":%d", 8080)
 		log.Fatal(http.ListenAndServe(portStr, nil))
 	} else {
-    port := os.Getenv("PORT")
-  	if port == "" {
-  		log.Fatal("$PORT must be set")
-  	}
-    fmt.Println("Running production")
-    portStr := ":" + port
+		port := os.Getenv("PORT")
+		if port == "" {
+			log.Fatal("$PORT must be set")
+		}
+		fmt.Println("Running production")
+		portStr := ":" + port
 		log.Fatal(http.ListenAndServe(portStr, nil))
 	}
 
