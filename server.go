@@ -1,9 +1,9 @@
 package main
 
 import (
-	// "encoding/json"
+	"encoding/json"
 	"fmt"
-	// "github.com/EricGlover/mandelbrot"
+	"github.com/EricGlover/mandelbrot"
 	"io"
 	"log"
 	"net/http"
@@ -178,10 +178,10 @@ func img(w http.ResponseWriter, r *http.Request) {
 	p.set(r.Form)
 	fmt.Println("p = ", p)
 	//ship it to mandelbrot
-	// answer := mandelbrot.Img(p.canvasWidth, p.canvasHeight, p.planeCoordinates, p.maxIterations)
+	answer := mandelbrot.Img(p.canvasWidth, p.canvasHeight, p.planeCoordinates, p.maxIterations)
 	//write our answer as a json response
-	// j, _ := json.Marshal(answer)
-	// w.Write(j)
+	j, _ := json.Marshal(answer)
+	w.Write(j)
 }
 
 const (
