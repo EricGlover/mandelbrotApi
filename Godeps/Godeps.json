@@ -1,12 +1,14 @@
 {
-  "ImportPath": "mandelbrotAPI",
-  "GoVersion": "go1.9",
-  "GodepVersion": "v80",
-  "Packages": ["./..."],
-  "Deps": [
-    {
-      "ImportPath": "github.com/EricGlover/mandelbrot",
-      "Rev": "ce6fb61a67474ca69bce77108668774914b7a498"
-    }
-  ]
+	"ImportPath": "mandelbrotAPI",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v80",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/EricGlover/mandelbrot",
+			"Rev": "85b9f1478c2d4cb1a878d8064fccff2b7ea8a93b"
+		}
+	]
 }

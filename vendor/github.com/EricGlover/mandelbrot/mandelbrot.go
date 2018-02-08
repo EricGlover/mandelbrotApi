@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"math"
 	"math/cmplx"
+  "sync"
 )
 
-//Img makes a slice of pixels (sort of ) representating a 2-D slice of the mandelbrot set
-//given a canvas size
-//planeCoordinates [top, right, left, bottom]
-//TODO: convert this to use goroutines
-//TODO: TEST THIS
+// Img makes a slice of pixels (sort of ) representating a 2-D slice of the mandelbrot set
+// given a canvas size
+// planeCoordinates [top, right, left, bottom]
+// using goroutines
 func Img(canvasWidth int, canvasHeight int, planeCoordinates [4]float64, maxIterations int) [][]int{
   //dreading writing the conversion functions again ....
   //make our 2-D pixel slice
@@ -26,15 +26,26 @@ func Img(canvasWidth int, canvasHeight int, planeCoordinates [4]float64, maxIter
   left := planeCoordinates[3]
   planeWidth := right - left
   planeHeight := top - bottom
+  xRatio := planeWidth / float64(canvasWidth)
+  yRatio := planeHeight / float64(canvasHeight)
+
+  //using waitgroups for goroutine control
+  var wg sync.WaitGroup
+	wg.Add(len(pixels))
   for x := 0; x < len(pixels); x++ {
-    for y := 0; y < len(pixels[x]); y++ {
-      //convert pixels coords to complex plane coords
-      c := complex((float64(x) * planeWidth / float64(canvasWidth) + left), (float64(y) * planeHeight / float64(canvasHeight) + bottom ))
-      //check the setMembership
-      escape := escapeIteration(c, maxIterations)
-      pixels[x][y] = escape
-    }
+		go func (x1 int) {
+			defer wg.Done()
+	    for y := 0; y < len(pixels[x1]); y++ {
+	        //convert pixels coords to complex plane coords
+	        c := complex((float64(x1) * xRatio + left), (float64(y) * yRatio + bottom ))
+	        //check the setMembership
+	        escape := escapeIteration(c, maxIterations)
+	        pixels[x1][y] = escape
+
+	    }
+		}(x)
   }
+  wg.Wait()
   return pixels
 }
 

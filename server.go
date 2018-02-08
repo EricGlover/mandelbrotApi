@@ -185,7 +185,7 @@ func img(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
-	production = true
+	production = false
 	apiVersion = 1
 )
 
