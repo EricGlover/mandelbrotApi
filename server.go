@@ -9,7 +9,8 @@ import (
 	"io"
 	"log"
 	"net/http"
-  "net/url"
+	"net/url"
+	"os"
 	"strconv"
 )
 
@@ -53,10 +54,10 @@ func readBody(r *http.Request) ([]byte, error) {
 func point(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("request: ", r)
 
-  //read our r.Body and parse the json into points
+	//read our r.Body and parse the json into points
 	var points interface{}
 	b, _ := readBody(r)
-  fmt.Println("body: ", string(b))
+	fmt.Println("body: ", string(b))
 	err := json.Unmarshal(b, &points)
 	if err != nil {
 		fmt.Println("error in json")
@@ -93,8 +94,8 @@ func point(w http.ResponseWriter, r *http.Request) {
 		answer[i] = mandelbrot.IsMandelbrot(nums[i])
 	}
 	fmt.Println("answer: ", answer)
-  b, err = json.Marshal(answer)
-  w.Write(b)
+	b, err = json.Marshal(answer)
+	w.Write(b)
 }
 
 func api(w http.ResponseWriter, r *http.Request) {
@@ -109,6 +110,7 @@ func api(w http.ResponseWriter, r *http.Request) {
 func root(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello everyone and welcome to my snazzy mandelbrot set api")
 }
+
 //do it with a get request
 /*canvasWidth: int (in pixels)
 canvasHeight: int (in pixels)
@@ -118,91 +120,105 @@ planeCoordinates: [Float64....] (top, right, bottom, left)
 maxIterations: int
 */
 type params struct {
-  canvasWidth, canvasHeight int;
-  planeCoordinates [4]float64;
-  maxIterations int;
+	canvasWidth, canvasHeight int
+	planeCoordinates          [4]float64
+	maxIterations             int
 }
+
 //parse some url query values, and set some default values
 func (p *params) set(q url.Values) {
-  w, ok := q["canvasWidth"]
-  if !ok {
-    p.canvasWidth = 10
-  } else {
-    i, err := strconv.Atoi(w[0])
-    if err != nil {
-      fmt.Println(err)
-    }
-    p.canvasWidth = i
-  }
-  h, ok := q["canvasHeight"]
-  if !ok {
-    p.canvasHeight = 5
-  }else {
-    i, err := strconv.Atoi(h[0])
-    if err != nil {
-      fmt.Println(err)
-    }
-    p.canvasHeight = i
-  }
-  coord, ok := q["planeCoordinates"]
-  if !ok {
-    p.planeCoordinates = [4]float64{1, 1, -1, -2}
-  } else {
-    arr := [4]float64{}
-    _, err := fmt.Sscanf(coord[0], "%f,%f,%f,%f", &arr[0], &arr[1], &arr[2], &arr[3])
-    if err != nil {
-      fmt.Println(err)
-    }
-    p.planeCoordinates = arr
-  }
-  iter, ok := q["maxIterations"]
-  if !ok {
-    p.maxIterations = 80
-  }else {
-    i, err := strconv.Atoi(iter[0])
-    if err != nil {
-      fmt.Println(err)
-    }
-    p.maxIterations = i
-  }
+	w, ok := q["canvasWidth"]
+	if !ok {
+		p.canvasWidth = 10
+	} else {
+		i, err := strconv.Atoi(w[0])
+		if err != nil {
+			fmt.Println(err)
+		}
+		p.canvasWidth = i
+	}
+	h, ok := q["canvasHeight"]
+	if !ok {
+		p.canvasHeight = 5
+	} else {
+		i, err := strconv.Atoi(h[0])
+		if err != nil {
+			fmt.Println(err)
+		}
+		p.canvasHeight = i
+	}
+	coord, ok := q["planeCoordinates"]
+	if !ok {
+		p.planeCoordinates = [4]float64{1, 1, -1, -2}
+	} else {
+		arr := [4]float64{}
+		_, err := fmt.Sscanf(coord[0], "%f,%f,%f,%f", &arr[0], &arr[1], &arr[2], &arr[3])
+		if err != nil {
+			fmt.Println(err)
+		}
+		p.planeCoordinates = arr
+	}
+	iter, ok := q["maxIterations"]
+	if !ok {
+		p.maxIterations = 80
+	} else {
+		i, err := strconv.Atoi(iter[0])
+		if err != nil {
+			fmt.Println(err)
+		}
+		p.maxIterations = i
+	}
 }
 func img(w http.ResponseWriter, r *http.Request) {
-  //fuck CORS
-  w.Header().Set("Access-Control-Allow-Origin", "*")
-  //parse the query params
-  r.ParseForm()
-  // fmt.Println(r.Form)
-  p := params{}
-  p.set(r.Form)
-  fmt.Println("p = ", p)
-  //ship it to mandelbrot
-  answer := mandelbrot.Img(p.canvasWidth, p.canvasHeight, p.planeCoordinates, p.maxIterations)
-  // fmt.Println(answer)
-  //write our answer as a json response 
-  j, _ := json.Marshal(answer)
-  w.Write(j)
+	//fuck CORS
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	//parse the query params
+	r.ParseForm()
+	// fmt.Println(r.Form)
+	p := params{}
+	p.set(r.Form)
+	fmt.Println("p = ", p)
+	//ship it to mandelbrot
+	answer := mandelbrot.Img(p.canvasWidth, p.canvasHeight, p.planeCoordinates, p.maxIterations)
+	//write our answer as a json response
+	j, _ := json.Marshal(answer)
+	w.Write(j)
 }
 
 const (
-	port       = 8080
+	production = true
 	apiVersion = 1
 )
 
-var portStr = fmt.Sprintf(":%d", port)
+
 
 func main() {
 	fmt.Println("hello server")
-	fmt.Println(mandelbrot.IsMandelbrot(1.00))
-	//testing
-	fmt.Println(portStr)
-	//root
+	// fmt.Println(mandelbrot.IsMandelbrot(1.00))
+
+
+  //routing
+  //root
 	http.HandleFunc("/", root)
 	//points router
 	http.HandleFunc("/api/points", point)
 	//api router
 	http.HandleFunc("/test", api)
-  //query testing
-  http.HandleFunc("/api/img", img)
-	//if error log and exit
-	log.Fatal(http.ListenAndServe(portStr, nil))
+	//query testing
+	http.HandleFunc("/api/img", img)
+
+
+  //server
+  //if error log and exit
+	if !production {
+    portStr := fmt.Sprintf(":%d", 8080)
+		log.Fatal(http.ListenAndServe(portStr, nil))
+	} else {
+    port := os.Getenv("PORT")
+  	if port == "" {
+  		log.Fatal("$PORT must be set")
+  	}
+		log.Fatal(http.ListenAndServe(port, nil))
+	}
+
 }
