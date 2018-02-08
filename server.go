@@ -108,6 +108,7 @@ func api(w http.ResponseWriter, r *http.Request) {
 	//parse some json here and we're good to go
 }
 func root(w http.ResponseWriter, r *http.Request) {
+  fmt.Println("running root")
 	fmt.Fprintf(w, "Hello everyone and welcome to my snazzy mandelbrot set api")
 }
 
@@ -218,6 +219,7 @@ func main() {
   	if port == "" {
   		log.Fatal("$PORT must be set")
   	}
+    fmt.Println("Running production")
 		log.Fatal(http.ListenAndServe(port, nil))
 	}
 
