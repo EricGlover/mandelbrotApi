@@ -1,0 +1,8 @@
+{
+  "name": "Mandelbrot Set Renderererer",
+  "description": "Small Service for doodling Mandelbrot Sets",
+  "author": "Eric Glover",
+  "keywords": ["go", "awesome", "Mandelbrot Set"],
+  "website": "http://github.com/EricGlover/mandelbrotApi",
+  "repository": "https://github.com/EricGlover/mandelbrotApi"
+}
