@@ -200,7 +200,7 @@ func imgTest(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
-	production = false
+	production = true
 	apiVersion = 1
 )
 
