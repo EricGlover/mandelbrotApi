@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/EricGlover/mandelbrot"
 	"io"
 	"log"
+	"mandelbrotAPI/mandelbrot"
 	"net/http"
 	"net/url"
 	"os"
@@ -184,13 +184,27 @@ func img(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
+func imgTest(w http.ResponseWriter, r *http.Request) {
+	//fuck CORS
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	canvasWidth := 5
+	canvasHeight := 5
+	planeCoordinates := [4]float64{1, 1, 0, 0}
+	maxIterations := 100
+	//ship it to mandelbrot
+	answer := mandelbrot.Img(canvasWidth, canvasHeight, planeCoordinates, maxIterations)
+	fmt.Println(answer)
+	//write our answer as a json response
+	j, _ := json.Marshal(answer)
+	w.Write(j)
+}
+
 const (
-	production = true
+	production = false
 	apiVersion = 1
 )
 
 func main() {
-	fmt.Println("hello server")
 	// fmt.Println(mandelbrot.IsMandelbrot(1.00))
 
 	//routing
@@ -202,6 +216,8 @@ func main() {
 	http.HandleFunc("/test", api)
 	//query testing
 	http.HandleFunc("/api/img", img)
+	//query testing
+	http.HandleFunc("/api/imgTest", imgTest)
 
 	//server
 	//if error log and exit
