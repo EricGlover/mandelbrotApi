@@ -124,7 +124,7 @@ type params struct {
 	maxIterations             int
 }
 
-//parse some url query values, and set some default values
+// parse some url query values, and set some default values
 func (p *params) set(q url.Values) {
 	w, ok := q["canvasWidth"]
 	if !ok {
@@ -168,6 +168,24 @@ func (p *params) set(q url.Values) {
 		p.maxIterations = i
 	}
 }
+func coordinates(w http.ResponseWriter, r *http.Request) {
+	//fuck CORS
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	//parse the query params
+	r.ParseForm()
+	fmt.Println(r.Form)
+	fmt.Println("running coordinates")
+	p := params{}
+	p.set(r.Form)
+	fmt.Println("p = ", p)
+	//ship it to mandelbrot
+	answer := mandelbrot.Coordinates(p.canvasWidth, p.canvasHeight, p.planeCoordinates, p.maxIterations)
+	fmt.Print(answer)
+	//write our answer as a json response
+	j, _ := json.Marshal(answer)
+	fmt.Print(j)
+	w.Write(j)
+}
 func img(w http.ResponseWriter, r *http.Request) {
 	//fuck CORS
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -200,16 +218,18 @@ func imgTest(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
-	production = true
+	production = false
+	devPort    = 8080
 	apiVersion = 1
 )
 
 func main() {
 	// fmt.Println(mandelbrot.IsMandelbrot(1.00))
+	// https://mandelbrot-api.herokuapp.com/api/img?canvasWidth=907&canvasHeight=578&maxIterations=100&planeCoordinates=1,1,-1,-2
 
 	//routing
 	//root
-	http.HandleFunc("/", root)
+	// http.HandleFunc("/", root)
 	//points router
 	http.HandleFunc("/api/points", point)
 	//api router
@@ -218,11 +238,14 @@ func main() {
 	http.HandleFunc("/api/img", img)
 	//query testing
 	http.HandleFunc("/api/imgTest", imgTest)
+	//coordinates
+	http.HandleFunc("/api/coordinates", coordinates)
 
 	//server
 	//if error log and exit
 	if !production {
-		portStr := fmt.Sprintf(":%d", 8080)
+		fmt.Printf("Running on port :%d", devPort)
+		portStr := fmt.Sprintf(":%d", devPort)
 		log.Fatal(http.ListenAndServe(portStr, nil))
 	} else {
 		port := os.Getenv("PORT")
